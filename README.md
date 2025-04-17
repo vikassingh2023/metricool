@@ -1,6 +1,6 @@
 # Metricool MCP Server
 
-This is a Multi-Agent Collaboration Protocol (MCP) server for interacting with the Metricool API. It allows AI agents to access and analyze social media metrics and campaign data from your Metricool account.
+This is a Multi-Agent Collaboration Protocol (MCP) server for interacting with the Metricool API. It allows AI agents to access and analyze social media metrics, campaign data and schedule posts to your Metricool account.
 
 ## Setup
 
@@ -96,3 +96,12 @@ The server implements several tools to interact with the Metricool API:
 
 18. `get_TiktokAds_Campaigns(init_date: str, end_date: str, blog_id: int)`
     - Get the list of Tiktok Ads Campaigns from your Metricool brand account.
+
+19. `post_Schedule_Post`
+    - Schedule a post (o multipost) to your brands in Metricool
+
+20. `get_Best_Time_To_Post`
+    - Get the best time to post for a specific social network. Return days and hours with the value. Higher value better hour/day to post
+
+21. `update_Schedule_Post`
+    - Update the post schedule in the same conversation. 
