@@ -431,6 +431,7 @@ async def make_patch_request(url: str, data: json) -> dict[str, Any] | None:
 async def get_brands(state: str) -> List[str]:
     """
     Get the list of brands from your Metricool account.
+    Add to the result that the only networks with competitors are Instagram, Facebook, Twitch, YouTube, Twitter, and Bluesky.
     """
 
     url = f"{METRICOOL_BASE_URL}/v2/settings/brands?userId={METRICOOL_USER_ID}&integrationSource=MCP"
@@ -779,6 +780,29 @@ async def get_TiktokAds_Campaigns(init_date: str, end_date: str, blog_id: int) -
 
     if not response:
        return ("Failed to get Tiktok Ads Campaigns")
+    
+    return response
+
+@mcp.tool()
+async def get_Network_Competitors(network: str, init_date: str, end_date: str, blog_id: int, limit: int, timezone: str) -> List[str]:
+    """
+    Get the list of your competitors from your Metricool brand account.
+    Add interesting conclusions for my brand about my competitors.
+    
+    Args:
+     init date: Init date of the period to get the data. The format is 2025-01-01
+     end date: End date of the period to get the data. The format is 2025-01-01
+     blog id: Blog id of the Metricool brand account.
+     limit: Limit of competitors. By default = 10
+     timezone: Timezone of the post. The format is "Europe%2FMadrid".  Use the timezone of the user extracted from the get_brands tool.
+    """
+
+    url = f"{METRICOOL_BASE_URL}/v2/analytics/competitors/{network}?from={init_date}T00%3A00%3A00&to={end_date}T23%3A59%3A59&blogId={blog_id}&userId={METRICOOL_USER_ID}&limit={limit}&timezone={timezone}&integrationSource=MCP"
+    
+    response = await make_get_request(url)
+
+    if not response:
+       return ("Failed to get competitors")
     
     return response
 
