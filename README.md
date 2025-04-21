@@ -97,11 +97,14 @@ The server implements several tools to interact with the Metricool API:
 18. `get_TiktokAds_Campaigns(init_date: str, end_date: str, blog_id: int)`
     - Get the list of Tiktok Ads Campaigns from your Metricool brand account.
 
-19. `post_Schedule_Post`
+19. `get_Network_Competitors`
+    - Get the list of competitors from your Metricool brand account (Instagram, Facebook, X, Bluesky, Youtube and Twitch).
+    
+20. `post_Schedule_Post`
     - Schedule a post (o multipost) to your brands in Metricool
 
-20. `get_Best_Time_To_Post`
+21. `get_Best_Time_To_Post`
     - Get the best time to post for a specific social network. Return days and hours with the value. Higher value better hour/day to post
 
-21. `update_Schedule_Post`
+22. `update_Schedule_Post`
     - Update the post schedule in the same conversation. 
