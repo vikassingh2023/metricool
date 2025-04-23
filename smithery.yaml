@@ -1,130 +1,27 @@
-version: "1"
-name: metricool
-description: "Metricool integration for social media analytics and scheduling"
-image: metricool:latest
-
-build:
-  context: .
-  dockerfile: Dockerfile
-
-env:
-  - METRICOOL_USER_TOKEN
-  - METRICOOL_USER_ID
-
-commands:
-  - name: deploy
-    help: "Deploy the Metricool MCP service"
-    command: echo "Deploying Metricool MCP service..."
-
-  - name: run
-    help: "Run the Metricool MCP service locally"
-    command: python src/mcp_metricool/server.py
-
-ports:
-  - 8080:8080
-
-tools:
-  - name: get_brands
-    description: "Get the list of brands from your Metricool account"
-    icon: "brand"
-    category: "Social Media"
-    
-  - name: get_Instagram_Reels
-    description: "Get the list of Instagram Reels from your Metricool account"
-    icon: "instagram"
-    category: "Social Media"
-    
-  - name: get_Instagram_Posts
-    description: "Get the list of Instagram Posts from your Metricool account"
-    icon: "instagram"
-    category: "Social Media"
-    
-  - name: get_Instagram_Stories
-    description: "Get the list of Instagram Stories from your Metricool account"
-    icon: "instagram"
-    category: "Social Media"
-    
-  - name: get_Tiktok_Videos
-    description: "Get the list of Tiktok Videos from your Metricool account"
-    icon: "tiktok"
-    category: "Social Media"
-    
-  - name: get_Facebook_Reels
-    description: "Get the list of Facebook Reels from your Metricool account"
-    icon: "facebook"
-    category: "Social Media"
-    
-  - name: get_Facebook_Posts
-    description: "Get the list of Facebook Posts from your Metricool account"
-    icon: "facebook"
-    category: "Social Media"
-    
-  - name: get_Facebook_Stories
-    description: "Get the list of Facebook Stories from your Metricool account"
-    icon: "facebook"
-    category: "Social Media"
-    
-  - name: get_Thread_Posts
-    description: "Get the list of Threads Posts from your Metricool account"
-    icon: "thread"
-    category: "Social Media"
-    
-  - name: get_X_Posts
-    description: "Get the list of X (Twitter) Posts from your Metricool account"
-    icon: "twitter"
-    category: "Social Media"
-    
-  - name: get_Bluesky_Posts
-    description: "Get the list of Bluesky Posts from your Metricool account"
-    icon: "bluesky"
-    category: "Social Media"
-    
-  - name: get_Linkedin_Posts
-    description: "Get the list of Linkedin Posts from your Metricool account"
-    icon: "linkedin"
-    category: "Social Media"
-    
-  - name: get_Pinterest_Pins
-    description: "Get the list of Pinterest Pins from your Metricool account"
-    icon: "pinterest"
-    category: "Social Media"
-    
-  - name: get_Youtube_Videos
-    description: "Get the list of Youtube Videos from your Metricool account"
-    icon: "youtube"
-    category: "Social Media"
-    
-  - name: get_Twitch_Videos
-    description: "Get the list of Twitch Videos from your Metricool account"
-    icon: "twitch"
-    category: "Social Media"
-    
-  - name: get_GoogleAds_Campaigns
-    description: "Get the list of Google Ads Campaigns from your Metricool account"
-    icon: "google"
-    category: "Advertising"
-    
-  - name: get_TiktokAds_Campaigns
-    description: "Get the list of Tiktok Ads Campaigns from your Metricool account"
-    icon: "tiktok"
-    category: "Advertising"
-    
-  - name: get_Network_Competitors
-    description: "Get the list of competitors from your Metricool account"
-    icon: "analytics"
-    category: "Analytics"
-    
-  - name: post_Schedule_Post
-    description: "Schedule a post to Metricool at a specific date and time"
-    icon: "calendar"
-    category: "Scheduling"
-    
-  - name: get_Best_Time_To_Post
-    description: "Get the best time to post for a specific provider"
-    icon: "clock"
-    category: "Scheduling"
-    
-  - name: update_Schedule_Post
-    description: "Update a scheduled post in Metricool"
-    icon: "edit"
-    category: "Scheduling" 
+# Smithery.ai configuration
+startCommand:
+type: stdio
+configSchema:
+    type: object
+    required:
+      - METRICOOL_USER_TOKEN
+      - METRICOOL_USER_ID
+    properties:
+      METRICOOL_USER_TOKEN:
+        type: string
+        description: The personal access token for accessing the Metricool API.
+      METRICOOL_USER_ID:
+        type: string
+        description: The user id for accessing the Metricool API.
+commandFunction:
+  |-
+  (config) => ({
+    "command": "uvx",
+    "args": [
+      "git+https://github.com/metricool/mcp-metricool"
+    ],
+    "env": {
+      "METRICOOL_USER_TOKEN": config.METRICOOL_USER_TOKEN,
+      "METRICOOL_USER_ID": config.METRICOOL_USER_ID
+    }
+  })
