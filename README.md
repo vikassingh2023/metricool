@@ -29,7 +29,7 @@ Paste this template in the file and replace <METRICOOL_USER_TOKEN> and <METRICOO
         "mcp-metricool": {
             "command": "uvx",
             "args": [
-                "git+https://github.com/viceentmarti4/mcp-metricool"
+                "mcp-metricool"
             ],
             "env": {
                 "METRICOOL_USER_TOKEN": "<METRICOOL_USER_TOKEN>",
@@ -107,4 +107,4 @@ The server implements several tools to interact with the Metricool API:
     - Get the best time to post for a specific social network. Return days and hours with the value. Higher value better hour/day to post
 
 22. `update_Schedule_Post`
-    - Update the post schedule in the same conversation. 
+    - Update the post schedule in the same conversation.
