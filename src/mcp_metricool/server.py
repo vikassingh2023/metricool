@@ -925,8 +925,6 @@ async def update_Schedule_Post(id: str, date:str, blog_id: int, info: json) -> s
                             "tiktokData": {"disableComment": "<boolean>", "disableDuet": "<boolean>", "disableStitch": "<boolean>", "privacyOption": "<string>", "commercialContentThirdParty": "<boolean>", "commercialContentOwnBrand": "<boolean>", "title": "<string>", "autoAddMusic": "<boolean>", "photoCoverIndex": "<integer>"},
                             "blueskyData": {"postLanguages":["",""]},
                             "threadsData":{"allowedCountryCodes:["",""]}
-       
-    
     """
 
     url = f"{METRICOOL_BASE_URL}/v2/scheduler/posts/{id}?blogId={blog_id}&userId={METRICOOL_USER_ID}&integrationSource=MCP"
