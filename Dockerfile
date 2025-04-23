@@ -14,10 +14,6 @@ COPY src/ ./src/
 # Install the project in development mode
 RUN pip install --no-cache-dir .
 
-# Create non-root user for the final stage
-RUN groupadd --system mcp && \
-    useradd --system --create-home --home-dir /home/mcp --gid mcp mcp
-
 # Final stage
 FROM python:3.12-slim
 
@@ -26,7 +22,10 @@ WORKDIR /app
 # Install only required system dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    # Create non-root user
+    groupadd --system mcp && \
+    useradd --system --create-home --home-dir /home/mcp --gid mcp mcp
 
 # Copy the installed package from the builder stage
 COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
