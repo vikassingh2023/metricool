@@ -1,42 +1,44 @@
-FROM python:3.12-slim AS builder
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS uv
 
+# Install the project into /app
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends && \
-    rm -rf /var/lib/apt/lists/*
+# Enable bytecode compilation
+ENV UV_COMPILE_BYTECODE=1
 
-# Copy project files
-COPY pyproject.toml README.md ./
-COPY src/ ./src/
+# Copy from the cache instead of linking since it's a mounted volume
+ENV UV_LINK_MODE=copy
 
-# Install the project in development mode
-RUN pip install --no-cache-dir .
+# Copy the required files for building the environment
+COPY pyproject.toml /app
+COPY uv.lock /app
+COPY README.md /app
 
-# Final stage
-FROM python:3.12-slim
+# Sync dependencies and update the lockfile
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --frozen --no-install-project --no-dev --no-editable
+
+# Then, add the rest of the project source code and install it
+# Installing separately from its dependencies allows optimal layer caching
+ADD . /app
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev --no-editable
+
+FROM python:3.12-slim-bookworm
 
 WORKDIR /app
+ 
+COPY --from=uv /root/.local /root/.local
+COPY --from=uv --chown=app:app /app/.venv /app/.venv
 
-# Install only required system dependencies
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends && \
-    rm -rf /var/lib/apt/lists/* && \
-    # Create non-root user
-    groupadd --system mcp && \
-    useradd --system --create-home --home-dir /home/mcp --gid mcp mcp
+# Place executables in the environment at the front of the path
+ENV PATH="/app/.venv/bin:$PATH"
 
-# Copy the installed package from the builder stage
-COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
-COPY --from=builder /usr/local/bin/mcp-metricool /usr/local/bin/mcp-metricool
+# Define environment variables
+ENV METRICOOL_USER_TOKEN=<METRICOOL_USER_TOKEN>
+ENV METRICOOL_USER_ID=<METRICOOL_USER_ID>
 
-# Set environment variables
-ENV PYTHONUNBUFFERED=1
-ENV TZ=Etc/UTC
-
-# Switch to non-privileged user
-USER mcp
-
-# Run the server
-CMD ["python", "-m", "mcp_metricool"]
+# Run the MCP server
+ENTRYPOINT ["mcp-metricool"]
