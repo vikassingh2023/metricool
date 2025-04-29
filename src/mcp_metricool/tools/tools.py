@@ -397,7 +397,7 @@ async def get_network_competitors(network: str, init_date: str, end_date: str, b
     return response
 
 @mcp.tool(name="post_schedule_post", description="Schedule a post to Metricool at a specific date and time")
-async def post_schedule_post(date:str, blog_id: int, info: json) -> str | dict[str, Any]:
+async def post_schedule_post(date:str, blog_id: int, info: [str, Any]) -> str | dict[str, Any]:
     """
     Schedule a post to Metricool at a specific date and time.
     To be able to schedule the post, you need to maintain the structure.
@@ -489,7 +489,7 @@ async def get_best_time_to_post(start: str, end: str, blog_id: int, provider: st
     return response
 
 @mcp.tool(name="update_schedule_post", description="Update a scheduled post in Metricool")
-async def update_schedule_post(id: str, date:str, blog_id: int, info: json) -> str | dict[str, Any]:
+async def update_schedule_post(id: str, date:str, blog_id: int, info: [str, Any]) -> str | dict[str, Any]:
     """
     Update a scheduled post in Metricool. You need the id of the post to update. Get it from the get_Scheduled_Posts tool previous on the conversation.
     Ask the user if they're sure they want to modify the post, including what will be changed, and require them to confirm.
