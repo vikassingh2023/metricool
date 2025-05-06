@@ -401,13 +401,17 @@ async def post_schedule_post(date:str, blog_id: int, info: json) -> str | dict[s
     """
     Schedule a post to Metricool at a specific date and time.
     To be able to schedule the post, you need to maintain the structure.
-    You can use the tool get_Best_Time_To_Post to get the best time to post for a specific provider if the user doesn't specify the time to post.
+    You can use the tool get_best_time_to_post to get the best time to post for a specific provider if the user doesn't specify the time to post.
     If the post include Instagram, is a must to have at least one image or video. If you don't have more information, you can ask the user about it and wait until you have the information.
     If the post include Pinterest, is a must to have a image and the board where to publish the pin. If you don't have more information, you can ask the user about it and wait until you have the information.
     If the post include Youtube, is a must to have a video, select the audience (if it's video made for kids or not) and the title of the video. If you don't have more information, you can ask the user about it and wait until you have the information.
     If the post include Tiktok, is a must to have at least one image or video. If you don't have more information, you can ask the user about it and wait until you have the information.
-    If the posts is Facebook Reel, is a must to have a video. If is Facebook Story, image or video is needed. If you don't have more information, you can ask the user about it and wait until you have the information.
+    If the post is Facebook Reel, is a must to have a video. If is Facebook Story, image or video is needed. If you don't have more information, you can ask the user about it and wait until you have the information.
+    If the post is Bluesky, make sure the text does not exceed 300 characters. If the content exceeds that limit, do not retry and return an error informing the user: "Error: The text exceeds the 300-character limit allowed on Bluesky. Please edit it."
+    If the post is for X (formerly Twitter), make sure before posting that the text does not exceed 280 characters. You must NOT split the message into multiple tweets or threads, the message must be evaluated strictly against a 280-character limit. If the text exceeds 280 characters, do not retry and return only the following error message and stop processing:
+    "Error: The text exceeds the 280-character limit allowed on X. Please edit it."
     The date can't be in the past.
+    DO NOT modify the text if there's any error, just notify the user.
 
     Args:
      date: Date and time to publish the post. The format is 2025-01-01T00:00:00
@@ -439,6 +443,15 @@ async def post_schedule_post(date:str, blog_id: int, info: json) -> str | dict[s
         The other fields are optional, but you need to add the ones you have. If you don't have more information, you can ask the user about it and wait until you have the information.
 
     """
+
+    for provider in info.get("providers", []):
+        network = provider.get("network")
+        text = info.get("text", "")
+
+        if network == "twitter" and len(text) > 280:
+            return "Error: The text exceeds the 280-character limit allowed on X. Please edit it and try again."
+        if network == "bluesky" and len(text) > 300:
+            return "Error: The text exceeds the 300-character limit allowed on Bluesky. Please edit it and try again."
 
     url = f"{METRICOOL_BASE_URL}/v2/scheduler/posts?blogId={blog_id}&userId={METRICOOL_USER_ID}&integrationSource=MCP"
 
