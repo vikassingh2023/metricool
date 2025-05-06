@@ -19,7 +19,7 @@ async def make_get_request(url: str) -> dict[str, Any] | None:
         except Exception:
             return None
 
-async def make_post_request(url: str, data: [str, Any]) -> dict[str, Any] | None:
+async def make_post_request(url: str, data: json) -> dict[str, Any] | None:
     """Make a post request to the Metricool API with proper error handling."""
     headers = {
         "X-Mc-Auth": METRICOOL_USER_TOKEN,
@@ -34,7 +34,7 @@ async def make_post_request(url: str, data: [str, Any]) -> dict[str, Any] | None
         except Exception:
             return None
 
-async def make_put_request(url: str, data: [str, Any]) -> dict[str, Any] | None:
+async def make_put_request(url: str, data: json) -> dict[str, Any] | None:
     """Make a put request to the Metricool API with proper error handling."""
     headers = {
         "X-Mc-Auth": METRICOOL_USER_TOKEN,
@@ -49,7 +49,7 @@ async def make_put_request(url: str, data: [str, Any]) -> dict[str, Any] | None:
         except Exception:
             return None
 
-async def make_patch_request(url: str, data: [str, Any]) -> int | None:
+async def make_patch_request(url: str, data: json) -> int | None:
     """Make a patch request to the Metricool API with proper error handling."""
     headers = {
         "X-Mc-Auth": METRICOOL_USER_TOKEN,
