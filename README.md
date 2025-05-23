@@ -103,8 +103,17 @@ The server implements several tools to interact with the Metricool API:
 20. `post_schedule_post`
     - Schedule a post (o multipost) to your brands in Metricool
 
-21. `get_best_time_to_post`
+21. `get_scheduled_posts`
+    - Get the scheduled posts from your Metricool brand account.
+
+22. `get_best_time_to_post`
     - Get the best time to post for a specific social network. Return days and hours with the value. Higher value better hour/day to post
 
-22. `update_schedule_post`
-    - Update the post schedule in the same conversation.
+23. `update_schedule_post`
+    - Update the scheduled post in the same conversation or a previously scheduled post.
+
+24. `get_metrics`
+    - Get the available metrics to obtain analysis from a specific social network.
+
+25. `get_analytics`
+    - Get the analytics from a specific social network of your Metricool brand account.

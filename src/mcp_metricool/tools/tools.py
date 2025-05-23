@@ -6,6 +6,7 @@ from mcp.server.fastmcp import FastMCP
 from mcp_metricool.utils.utils import make_get_request
 from mcp_metricool.utils.utils import make_post_request
 from mcp_metricool.utils.utils import make_put_request
+from mcp_metricool.utils.utils import network_subject_metrics
 from ..config import METRICOOL_BASE_URL
 from ..config import METRICOOL_USER_ID
 
@@ -452,7 +453,6 @@ async def post_schedule_post(date:str, blog_id: int, info: json) -> str | dict[s
             return "Error: The text exceeds the 280-character limit allowed on X. Please edit it and try again."
         if network == "bluesky" and len(text) > 300:
             return "Error: The text exceeds the 300-character limit allowed on Bluesky. Please edit it and try again."
-
     url = f"{METRICOOL_BASE_URL}/v2/scheduler/posts?blogId={blog_id}&userId={METRICOOL_USER_ID}&integrationSource=MCP"
 
     response = await make_post_request(url, data=json.dumps(info))
@@ -542,7 +542,7 @@ async def update_schedule_post(id: str, date:str, blog_id: int, info: json) -> s
      date: Date and time to publish the post. The format is 2025-01-01T00:00:00
      id: id of the post to update. Get it from the get_scheduled_posts tool previous on the conversation.
      blog id: Blog id of the Metricool brand account.
-     info: Data of the post to be scheduled. You need to send only the fields you want to update. This is so important. Should be a json object with the following fields:
+     info: Data of the post to be scheduled. Should be a json object with the following fields:
         id: id of the post to update. Get it from the get_scheduled_posts tool previous on the conversation. The format is "id":<integer>
         uuid: uuid of the post to update. Get it from the get_scheduled_posts tool previous on the conversation. The format is "uuid":"<string>"
         autoPublish: True or False, default is True.
@@ -578,3 +578,123 @@ async def update_schedule_post(id: str, date:str, blog_id: int, info: json) -> s
         return ("Failed to update the post")
 
     return response
+
+
+
+@mcp.tool()
+async def get_metrics(network: str) -> str | dict[str, Any]:
+    """
+    Retrieve the available metrics for a specific network.
+    Args:
+        network: Specific network to get the available metrics.
+    """
+    if network not in network_subject_metrics:
+        return f"Incorrect network '{network}'. The available networks are: {', '.join(network_subject_metrics.keys())}"
+    else:
+        metrics = {}
+        subjects = list(network_subject_metrics[network].keys())
+        for subj in subjects:
+            metrics[subj] = network_subject_metrics[network][subj]
+        return {"metrics": metrics,
+                "instructions": "Stop the chat, show the metrics and let the user choose the metrics they want to analyze before going again to get_analytics, the user must choose before you continue."}
+
+
+@mcp.tool()
+async def get_analytics(blog_id: int, start: str, end: str, timezone: str, network: str, metric: [str]) -> str | dict[str, Any]:
+
+    """
+    Retrieve analytics data for a specific Metricool brand. If the user does not specify any metric you can use the
+    get_metrics tool and let the user decide them.
+
+    Args:
+        - blog_id (int): ID of the Metricool brand account. Required.
+        - start (str): Start date of the data period (format: YYYY-MM-DD). Required.
+        - end (str): End date of the data period (format: YYYY-MM-DD). Required.
+        - timezone (str): Timezone (e.g., Europe%2FMadrid). Required.
+        - network (str): Social network to analyze (e.g., facebook, instagram, linkedin, youtube, tiktok, etc.), it must be connected to the brand. Required.
+        - metric ([str]): List of metrics, default is empty.
+        If blog_id is missing, ask the user to provide it.
+        If network is missing, ask the user to specify one.
+        If network is not connected to the brand, ask the user to specify one of the connected ones.
+"""
+
+    if network not in network_subject_metrics:
+        return f"Incorrect network '{network}'. The available networks are: {', '.join(network_subject_metrics.keys())}"
+    if not metric:
+        return "Please provide a list of metrics. You can use the 'get_metrics' tool to explore available metrics."
+
+    results = {}
+
+
+    subjects = list(network_subject_metrics[network].keys())
+    start_aux = start.replace("-", "")
+    end_aux = end.replace("-", "")
+    for subj in subjects:
+        metrics = metric if metric else network_subject_metrics[network][subj]
+        for met in metrics:
+            if met not in network_subject_metrics[network][subj]:
+                continue
+            if network == 'tiktok' and subj == 'videos':
+                url = (
+                f"{METRICOOL_BASE_URL}/v2/analytics/timelines"
+                f"?blogId={blog_id}&userId={METRICOOL_USER_ID}&integrationSource=MCP"
+                f"&from={start}T00%3A00%3A00%2B01%3A00&to={end}T23%3A59%3A59%2B02%3A00"
+                f"&timezone={timezone}&metric={met}&network={network}"
+                )
+            elif network == 'youtube' and subj == 'videos':
+                url = (
+                    f"{METRICOOL_BASE_URL}/v2/analytics/timelines"
+                    f"?blogId={blog_id}&userId={METRICOOL_USER_ID}&integrationSource=MCP"
+                    f"&from={start}T00%3A00%3A00%2B01%3A00&to={end}T23%3A59%3A59%2B02%3A00"
+                    f"&timezone={timezone}&metric={met}&network={network}&postsType=publishedInRange"
+                )
+            elif network == 'youtube' and subj == "account":
+                url = (
+                    f"https://app.metricool.com/api/stats/timeline/{met}?start={start_aux}&end={end_aux}&timezone={timezone}"
+                    f"&userId={METRICOOL_USER_ID}&blogId={blog_id}&integrationSource=MCP"
+                )
+            elif network == "linkedin" and subj != "stories":
+                url = (
+                    f"{METRICOOL_BASE_URL}/v2/analytics/timelines"
+                    f"?blogId={blog_id}&userId={METRICOOL_USER_ID}&integrationSource=MCP"
+                    f"&from={start}T00%3A00%3A00%2B01%3A00&to={end}T23%3A59%3A59%2B02%3A00"
+                    f"&timezone={timezone}&metric={met}&metricType={subj}&network={network}"
+                )
+            elif network == "linkedin" and subj == "stories":
+                url = (
+                    f"https://app.metricool.com/api/stats/timeline/{met}"
+                    f"?start={start_aux}&end={end_aux}&userId={METRICOOL_USER_ID}&blogId={blog_id}&integrationSource=MCP"
+                )
+            elif network == "webpage":
+                url = (
+                    f"https://app.metricool.com/api/stats/timeline/{met}"
+                    f"?start={start_aux}&end={end_aux}&userId={METRICOOL_USER_ID}&blogId={blog_id}&timezone={timezone}&integrationSource=MCP"
+                )
+            elif network == "twitter":
+                url = (
+                    f"https://app.metricool.com/api/stats/timeline/{met}"
+                    f"?start={start_aux}&end={end_aux}&userId={METRICOOL_USER_ID}&blogId={blog_id}&timezone={timezone}&integrationSource=MCP"
+                )
+            elif network == "twitch":
+                url = (
+                    f"https://app.metricool.com/api/stats/timeline/twitch{met}"
+                    f"?start={start_aux}&end={end_aux}&userId={METRICOOL_USER_ID}&blogId={blog_id}&timezone={timezone}&integrationSource=MCP"
+                )
+            else:
+                url = (
+                f"{METRICOOL_BASE_URL}/v2/analytics/timelines"
+                f"?blogId={blog_id}&userId={METRICOOL_USER_ID}&integrationSource=MCP"
+                f"&from={start}T00%3A00%3A00%2B01%3A00&to={end}T23%3A59%3A59%2B02%3A00"
+                f"&timezone={timezone}&metric={met}&subject={subj}&network={network}"
+                )
+            try:
+                result = await make_get_request(url)
+                if result:
+                    results[f"{subj}:{met}"] = result
+                else:
+                    results[f"{subj}:{met}"] = "No data"
+            except Exception as e:
+                results[f"{subj}:{met}"] = f"Error: {str(e)}"
+
+    return results if results else "No valid data."
+
