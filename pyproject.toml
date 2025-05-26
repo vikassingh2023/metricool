@@ -1,7 +1,7 @@
 [project]
 name = "mcp-metricool"
-version = "1.1.1"
-description = "This is a Multi-Agent Collaboration Protocol (MCP) server for interacting with the Metricool API. It allows AI agents to access and analyze social media metrics and campaign data from your Metricool account."
+version = "1.1.2"
+description = "This is a Model Context Protocol (MCP) server for interacting with the Metricool API. It allows AI agents to access and analyze social media metrics and campaign data from your Metricool account."
 readme = "README.md"
 authors = [
     { name = "Laura Esteban", email = "lauraesteban@metricool.com" },
