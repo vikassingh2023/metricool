@@ -1,6 +1,6 @@
 # Metricool MCP Server
 
-This is a Multi-Agent Collaboration Protocol (MCP) server for interacting with the Metricool API. It allows AI agents to access and analyze social media metrics, campaign data and schedule posts to your Metricool account.
+This is a Model Context Protocol (MCP) server for interacting with the Metricool API. It allows AI agents to access and analyze social media metrics, campaign data and schedule posts to your Metricool account.
 
 ## Setup
 
