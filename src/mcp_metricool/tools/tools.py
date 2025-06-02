@@ -9,12 +9,16 @@ from mcp_metricool.utils.utils import make_put_request
 from mcp_metricool.utils.utils import network_subject_metrics
 from ..config import METRICOOL_BASE_URL
 from ..config import METRICOOL_USER_ID
+from zoneinfo import ZoneInfo
+from datetime import datetime
+from urllib.parse import unquote
+import pytz
 
 # Initialize FastMCP server
 mcp = FastMCP("metricool")
 
 @mcp.tool()
-async def get_brands(state: str) -> str | dict[str, Any]:
+async def get_brands() -> str | dict[str, Any]:
     """
     Get the list of brands from your Metricool account.
     Add to the result that the only networks with competitors are Instagram, Facebook, Twitch, YouTube, Twitter, and Bluesky.
@@ -80,12 +84,12 @@ async def get_instagram_stories(init_date: str, end_date: str, blog_id: int) -> 
     Get the list of Instagram Stories from your Metricool account.
 
     Args:
-     init date: Init date of the period to get the data. The format is 20250101
-     end date: End date of the period to get the data. The format is 20250101
+     init date: Init date of the period to get the data. The format is 2025-01-01
+     end date: End date of the period to get the data. The format is 2025-01-01
      blog id: Blog id of the Metricool brand account.
     """
 
-    url = f"{METRICOOL_BASE_URL}/v2/analytics/stories/instagram?start={init_date}T00%3A00%3A00&end={end_date}T23%3A59%3A59&blogId={blog_id}&userId={METRICOOL_USER_ID}&integrationSource=MCP"
+    url = f"{METRICOOL_BASE_URL}/v2/analytics/stories/instagram?from={init_date}T00%3A00%3A00&to={end_date}T23%3A59%3A59&blogId={blog_id}&userId={METRICOOL_USER_ID}&integrationSource=MCP"
 
     response = await make_get_request(url)
 
