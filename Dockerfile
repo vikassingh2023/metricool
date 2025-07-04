@@ -30,15 +30,10 @@ FROM python:3.12-slim-bookworm
 
 WORKDIR /app
  
-COPY --from=uv /root/.local /root/.local
 COPY --from=uv --chown=app:app /app/.venv /app/.venv
 
 # Place executables in the environment at the front of the path
 ENV PATH="/app/.venv/bin:$PATH"
-
-# Define environment variables
-ENV METRICOOL_USER_TOKEN=<METRICOOL_USER_TOKEN>
-ENV METRICOOL_USER_ID=<METRICOOL_USER_ID>
 
 # Run the MCP server
 ENTRYPOINT ["mcp-metricool"]
