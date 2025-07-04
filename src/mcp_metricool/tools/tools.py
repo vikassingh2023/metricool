@@ -9,12 +9,15 @@ from mcp_metricool.utils.utils import make_put_request
 from mcp_metricool.utils.utils import network_subject_metrics
 from ..config import METRICOOL_BASE_URL
 from ..config import METRICOOL_USER_ID
+from datetime import datetime
+from urllib.parse import unquote, quote
+from pytz import timezone
 
 # Initialize FastMCP server
 mcp = FastMCP("metricool")
 
 @mcp.tool()
-async def get_brands(state: str) -> str | dict[str, Any]:
+async def get_brands() -> str | dict[str, Any]:
     """
     Get the list of brands from your Metricool account.
     Add to the result that the only networks with competitors are Instagram, Facebook, Twitch, YouTube, Twitter, and Bluesky.
@@ -40,12 +43,12 @@ async def get_instagram_reels(init_date: str, end_date: str, blog_id: int) -> st
     Get the list of Instagram Reels from your Metricool account.
 
     Args:
-     init date: Init date of the period to get the data. The format is 2025-01-01
-     end date: End date of the period to get the data. The format is 2025-01-01
+     init date: Init date of the period to get the data. The format is YYYY-MM-DD
+     end date: End date of the period to get the data. The format is YYYY-MM-DD
      blog id: Blog id of the Metricool brand account.
     """
 
-    url = f"{METRICOOL_BASE_URL}/v2/analytics/reels/instagram?from={init_date}T00%3A00%3A00&to={end_date}T00%3A00%3A00&blogId={blog_id}&userId={METRICOOL_USER_ID}&integrationSource=MCP"
+    url = f"{METRICOOL_BASE_URL}/v2/analytics/reels/instagram?from={init_date}T00%3A00%3A00&to={end_date}T23%3A59%3A59&blogId={blog_id}&userId={METRICOOL_USER_ID}&integrationSource=MCP"
 
     response = await make_get_request(url)
 
@@ -60,12 +63,12 @@ async def get_instagram_posts(init_date: str, end_date: str, blog_id: int) -> st
     Get the list of Instagram Posts from your Metricool account.
 
     Args:
-     init date: Init date of the period to get the data. The format is 2025-01-01
-     end date: End date of the period to get the data. The format is 2025-01-01
+     init date: Init date of the period to get the data. The format is YYYY-MM-DD
+     end date: End date of the period to get the data. The format is YYYY-MM-DD
      blog id: Blog id of the Metricool brand account.
     """
 
-    url = f"{METRICOOL_BASE_URL}/v2/analytics/posts/instagram?from={init_date}T00%3A00%3A00&to={end_date}T00%3A00%3A00&blogId={blog_id}&userId={METRICOOL_USER_ID}&integrationSource=MCP"
+    url = f"{METRICOOL_BASE_URL}/v2/analytics/posts/instagram?from={init_date}T00%3A00%3A00&to={end_date}T23%3A59%3A59&blogId={blog_id}&userId={METRICOOL_USER_ID}&integrationSource=MCP"
 
     response = await make_get_request(url)
 
@@ -80,12 +83,12 @@ async def get_instagram_stories(init_date: str, end_date: str, blog_id: int) -> 
     Get the list of Instagram Stories from your Metricool account.
 
     Args:
-     init date: Init date of the period to get the data. The format is 20250101
-     end date: End date of the period to get the data. The format is 20250101
+     init date: Init date of the period to get the data. The format is YYYY-MM-DD
+     end date: End date of the period to get the data. The format is YYYY-MM-DD
      blog id: Blog id of the Metricool brand account.
     """
 
-    url = f"{METRICOOL_BASE_URL}/v2/analytics/stories/instagram?start={init_date}T00%3A00%3A00&end={end_date}T23%3A59%3A59&blogId={blog_id}&userId={METRICOOL_USER_ID}&integrationSource=MCP"
+    url = f"{METRICOOL_BASE_URL}/v2/analytics/stories/instagram?from={init_date}T00%3A00%3A00&to={end_date}T23%3A59%3A59&blogId={blog_id}&userId={METRICOOL_USER_ID}&integrationSource=MCP"
 
     response = await make_get_request(url)
 
@@ -100,12 +103,12 @@ async def get_tiktok_videos(init_date: str, end_date: str, blog_id: int) -> str 
     Get the list of Tiktok Videos from your Metricool account.
 
     Args:
-     init date: Init date of the period to get the data. The format is 2025-01-01
-     end date: End date of the period to get the data. The format is 2025-01-01
+     init date: Init date of the period to get the data. The format is YYYY-MM-DD
+     end date: End date of the period to get the data. The format is YYYY-MM-DD
      blog id: Blog id of the Metricool brand account.
     """
 
-    url = f"{METRICOOL_BASE_URL}/v2/analytics/posts/tiktok?from={init_date}T00%3A00%3A00&to={end_date}T00%3A00%3A00&blogId={blog_id}&userId={METRICOOL_USER_ID}&integrationSource=MCP"
+    url = f"{METRICOOL_BASE_URL}/v2/analytics/posts/tiktok?from={init_date}T00%3A00%3A00&to={end_date}T23%3A59%3A59&blogId={blog_id}&userId={METRICOOL_USER_ID}&integrationSource=MCP"
 
     response = await make_get_request(url)
 
@@ -120,8 +123,8 @@ async def get_facebook_reels(init_date: str, end_date: str, blog_id: int) -> str
     Get the list of Facebook Reels from your Metricool account.
 
     Args:
-     init date: Init date of the period to get the data. The format is 2025-01-01
-     end date: End date of the period to get the data. The format is 2025-01-01
+     init date: Init date of the period to get the data. The format is YYYY-MM-DD
+     end date: End date of the period to get the data. The format is YYYY-MM-DD
      blog id: Blog id of the Metricool brand account.
     """
 
@@ -140,8 +143,8 @@ async def get_facebook_posts(init_date: str, end_date: str, blog_id: int) -> str
     Get the list of Facebook Posts from your Metricool brand account.
 
     Args:
-     init date: Init date of the period to get the data. The format is 2025-01-01
-     end date: End date of the period to get the data. The format is 2025-01-01
+     init date: Init date of the period to get the data. The format is YYYY-MM-DD
+     end date: End date of the period to get the data. The format is YYYY-MM-DD
      blog id: Blog id of the Metricool brand account.
     """
 
@@ -160,8 +163,8 @@ async def get_facebook_stories(init_date: str, end_date: str, blog_id: int) -> s
     Get the list of Facebook Stories from your Metricool brand account.
 
     Args:
-     init date: Init date of the period to get the data. The format is 2025-01-01
-     end date: End date of the period to get the data. The format is 2025-01-01
+     init date: Init date of the period to get the data. The format is YYYY-MM-DD
+     end date: End date of the period to get the data. The format is YYYY-MM-DD
      blog id: Blog id of the Metricool brand account.
     """
 
@@ -180,8 +183,8 @@ async def get_thread_posts(init_date: str, end_date: str, blog_id: int) -> str |
     Get the list of Threads Posts from your Metricool brand account.
 
     Args:
-     init date: Init date of the period to get the data. The format is 2025-01-01
-     end date: End date of the period to get the data. The format is 2025-01-01
+     init date: Init date of the period to get the data. The format is YYYY-MM-DD
+     end date: End date of the period to get the data. The format is YYYY-MM-DD
      blog id: Blog id of the Metricool brand account.
     """
 
@@ -200,8 +203,8 @@ async def get_x_posts(init_date: str, end_date: str, blog_id: int) -> str | dict
     Get the list of X (Twitter) Posts from your Metricool account.
 
     Args:
-     init date: Init date of the period to get the data. The format is 20250101
-     end date: End date of the period to get the data. The format is 20250101
+     init date: Init date of the period to get the data. The format is YYYYMMDD
+     end date: End date of the period to get the data. The format is YYYYMMDD
      blog id: Blog id of the Metricool brand account.
     """
 
@@ -220,8 +223,8 @@ async def get_bluesky_posts(init_date: str, end_date: str, blog_id: int) -> str 
     Get the list of Bluesky Posts from your Metricool brand account.
 
     Args:
-     init date: Init date of the period to get the data. The format is 2025-01-01
-     end date: End date of the period to get the data. The format is 2025-01-01
+     init date: Init date of the period to get the data. The format is YYYY-MM-DD
+     end date: End date of the period to get the data. The format is YYYY-MM-DD
      blog id: Blog id of the Metricool brand account.
     """
 
@@ -240,8 +243,8 @@ async def get_linkedin_posts(init_date: str, end_date: str, blog_id: int) -> str
     Get the list of Linkedin Posts from your Metricool brand account.
 
     Args:
-     init date: Init date of the period to get the data. The format is 2025-01-01
-     end date: End date of the period to get the data. The format is 2025-01-01
+     init date: Init date of the period to get the data. The format is YYYY-MM-DD
+     end date: End date of the period to get the data. The format is YYYY-MM-DD
      blog id: Blog id of the Metricool brand account.
     """
 
@@ -260,8 +263,8 @@ async def get_pinterest_pins(init_date: str, end_date: str, blog_id: int) -> str
     Get the list of Pinterest Pins from your Metricool brand account.
 
     Args:
-     init date: Init date of the period to get the data. The format is 2025-01-01
-     end date: End date of the period to get the data. The format is 2025-01-01
+     init date: Init date of the period to get the data. The format is YYYY-MM-DD
+     end date: End date of the period to get the data. The format is YYYY-MM-DD
      blog id: Blog id of the Metricool brand account.
     """
 
@@ -280,8 +283,8 @@ async def get_youtube_videos(init_date: str, end_date: str, blog_id: int) -> str
     Get the list of Youtube Videos from your Metricool brand account.
 
     Args:
-     init date: Init date of the period to get the data. The format is 2025-01-01
-     end date: End date of the period to get the data. The format is 2025-01-01
+     init date: Init date of the period to get the data. The format is YYYY-MM-DD
+     end date: End date of the period to get the data. The format is YYYY-MM-DD
      blog id: Blog id of the Metricool brand account.
     """
 
@@ -300,8 +303,8 @@ async def get_twitch_videos(init_date: str, end_date: str, blog_id: int) -> str 
     Get the list of Twitch Videos from your Metricool account.
 
     Args:
-     init date: Init date of the period to get the data. The format is 20250101
-     end date: End date of the period to get the data. The format is 20250101
+     init date: Init date of the period to get the data. The format is YYYYMMDD
+     end date: End date of the period to get the data. The format is YYYYMMDD
      blog id: Blog id of the Metricool brand account.
     """
 
@@ -320,8 +323,8 @@ async def get_facebookads_campaigns(init_date: str, end_date: str, blog_id: int)
     Get the list of Facebook Ads Campaigns from your Metricool account.
 
     Args:
-     init date: Init date of the period to get the data. The format is 20250101
-     end date: End date of the period to get the data. The format is 20250101
+     init date: Init date of the period to get the data. The format is YYYYMMDD
+     end date: End date of the period to get the data. The format is YYYYMMDD
      blog id: Blog id of the Metricool brand account.
     """
 
@@ -340,8 +343,8 @@ async def get_googleads_campaigns(init_date: str, end_date: str, blog_id: int) -
     Get the list of Google Ads Campaigns from your Metricool account.
 
     Args:
-     init date: Init date of the period to get the data. The format is 20250101
-     end date: End date of the period to get the data. The format is 20250101
+     init date: Init date of the period to get the data. The format is YYYYMMDD
+     end date: End date of the period to get the data. The format is YYYYMMDD
      blog id: Blog id of the Metricool brand account.
     """
 
@@ -360,8 +363,8 @@ async def get_tiktokads_campaigns(init_date: str, end_date: str, blog_id: int) -
     Get the list of Tiktok Ads Campaigns from your Metricool brand account.
 
     Args:
-     init date: Init date of the period to get the data. The format is 2025-01-01
-     end date: End date of the period to get the data. The format is 2025-01-01
+     init date: Init date of the period to get the data. The format is YYYY-MM-DD
+     end date: End date of the period to get the data. The format is YYYY-MM-DD
      blog id: Blog id of the Metricool brand account.
     """
 
@@ -381,8 +384,8 @@ async def get_network_competitors(network: str, init_date: str, end_date: str, b
     Add interesting conclusions for my brand about my competitors.
 
     Args:
-     init date: Init date of the period to get the data. The format is 2025-01-01
-     end date: End date of the period to get the data. The format is 2025-01-01
+     init date: Init date of the period to get the data. The format is YYYY-MM-DD
+     end date: End date of the period to get the data. The format is YYYY-MM-DD
      blog id: Blog id of the Metricool brand account.
      limit: Limit of competitors. By default = 10
      timezone: Timezone of the post. The format is "Europe%2FMadrid".  Use the timezone of the user extracted from the get_brands tool.
@@ -415,7 +418,7 @@ async def post_schedule_post(date:str, blog_id: int, info: json) -> str | dict[s
     DO NOT modify the text if there's any error, just notify the user.
 
     Args:
-     date: Date and time to publish the post. The format is 2025-01-01T00:00:00
+     date: Date and time to publish the post. The format is YYYY-MM-DDT00:00:00
      blog id: Blog id of the Metricool brand account.
      info: Data of the post to be scheduled. Should be a json object with the following fields:
         autoPublish: True or False, default is True.
@@ -426,7 +429,7 @@ async def post_schedule_post(date:str, blog_id: int, info: json) -> str | dict[s
         media: default is empty list.
         mediaAltText: default is empty list.
         providers: always need at least one provider with the format [{"network":"<string>"}]. Use "twitter" for X posts.
-        publicationDate: Date and timezone of the post. The format is {dateTime:"2025-01-01T00:00:00", timezone:"Europe/Madrid"}. Use the timezone of the user extracted from the get_brands tool.
+        publicationDate: Date and timezone of the post. The format is {dateTime:"YYYY-MM-DDT00:00:00", timezone:"Europe/Madrid"}. Use the timezone of the user extracted from the get_brands tool.
         shortener: True or False, default is False.
         smartLinkData: default is {ids:[]}
         text: Text of the post.
@@ -472,8 +475,8 @@ async def get_scheduled_posts(blog_id: int, start: str, end: str, timezone: str,
 
     Args:
      blog_id: Blog id of the Metricool brand account.
-     start: Start date of the period to get the data. The format is 2025-01-01
-     end: End date of the period to get the data. The format is 2025-01-01
+     start: Start date of the period to get the data. The format is YYYY-MM-DD
+     end: End date of the period to get the data. The format is YYYY-MM-DD
      timezone: Timezone of the post. The format is "Europe%2FMadrid".  Use the timezone of the user extracted from the get_brands tool.
      extendedRange: When it's true, search date range is expanded one day after and one day before. Default value is false.
     """
@@ -493,8 +496,8 @@ async def get_best_time_to_post(start: str, end: str, blog_id: int, provider: st
     Get the best time to post for a specific provider. The return is a list of hours and days with a value. The higher the value, the best time to post.
     Try to get the best for as maximum of 1 week. If you have day to publish but not hours, choose the start and end of this day.
     Args:
-     start: Start date of the period to get the data. The format is 2025-01-01
-     end: End date of the period to get the data. The format is 2025-01-01
+     start: Start date of the period to get the data. The format is YYYY-MM-DD
+     end: End date of the period to get the data. The format is YYYY-MM-DD
      blog id: Blog id of the Metricool brand account.
      provider: Provider of the post. The format is "twitter", "facebook", "instagram", "linkedin", "youtube", "tiktok". Only these are accepted.
      timezone: Timezone of the post. The format is "Europe%2FMadrid".  Use the timezone of the user extracted from the get_brands tool.
@@ -539,7 +542,7 @@ async def update_schedule_post(id: str, date:str, blog_id: int, info: json) -> s
     The date can't be in the past.
 
     Args:
-     date: Date and time to publish the post. The format is 2025-01-01T00:00:00
+     date: Date and time to publish the post. The format is YYYY-MM-DDT00:00:00
      id: id of the post to update. Get it from the get_scheduled_posts tool previous on the conversation.
      blog id: Blog id of the Metricool brand account.
      info: Data of the post to be scheduled. Should be a json object with the following fields:
@@ -610,7 +613,7 @@ async def get_analytics(blog_id: int, start: str, end: str, timezone: str, netwo
         - blog_id (int): ID of the Metricool brand account. Required.
         - start (str): Start date of the data period (format: YYYY-MM-DD). Required.
         - end (str): End date of the data period (format: YYYY-MM-DD). Required.
-        - timezone (str): Timezone (e.g., Europe%2FMadrid). Required.
+        - timezone (str): Timezone from the brand(e.g., Europe%2FMadrid). Required. If you don't have the timezone you can obtain it from the get_brands tool
         - network (str): Social network to analyze (e.g., facebook, instagram, linkedin, youtube, tiktok, etc.), it must be connected to the brand. Required.
         - metric ([str]): List of metrics, default is empty.
         If blog_id is missing, ask the user to provide it.
@@ -627,6 +630,8 @@ async def get_analytics(blog_id: int, start: str, end: str, timezone: str, netwo
 
 
     subjects = list(network_subject_metrics[network].keys())
+    start_formatted = format_datetime_with_timezone(start, "00:00:00", timezone)
+    end_formatted = format_datetime_with_timezone(end, "23:59:59", timezone)
     start_aux = start.replace("-", "")
     end_aux = end.replace("-", "")
     for subj in subjects:
@@ -638,14 +643,14 @@ async def get_analytics(blog_id: int, start: str, end: str, timezone: str, netwo
                 url = (
                 f"{METRICOOL_BASE_URL}/v2/analytics/timelines"
                 f"?blogId={blog_id}&userId={METRICOOL_USER_ID}&integrationSource=MCP"
-                f"&from={start}T00%3A00%3A00%2B01%3A00&to={end}T23%3A59%3A59%2B02%3A00"
+                f"&from={start_formatted}&to={end_formatted}"
                 f"&timezone={timezone}&metric={met}&network={network}"
                 )
             elif network == 'youtube' and subj == 'videos':
                 url = (
                     f"{METRICOOL_BASE_URL}/v2/analytics/timelines"
                     f"?blogId={blog_id}&userId={METRICOOL_USER_ID}&integrationSource=MCP"
-                    f"&from={start}T00%3A00%3A00%2B01%3A00&to={end}T23%3A59%3A59%2B02%3A00"
+                    f"&from={start_formatted}&to={end_formatted}"
                     f"&timezone={timezone}&metric={met}&network={network}&postsType=publishedInRange"
                 )
             elif network == 'youtube' and subj == "account":
@@ -657,7 +662,7 @@ async def get_analytics(blog_id: int, start: str, end: str, timezone: str, netwo
                 url = (
                     f"{METRICOOL_BASE_URL}/v2/analytics/timelines"
                     f"?blogId={blog_id}&userId={METRICOOL_USER_ID}&integrationSource=MCP"
-                    f"&from={start}T00%3A00%3A00%2B01%3A00&to={end}T23%3A59%3A59%2B02%3A00"
+                    f"&from={start_formatted}&to={end_formatted}"
                     f"&timezone={timezone}&metric={met}&metricType={subj}&network={network}"
                 )
             elif network == "linkedin" and subj == "stories":
@@ -684,7 +689,7 @@ async def get_analytics(blog_id: int, start: str, end: str, timezone: str, netwo
                 url = (
                 f"{METRICOOL_BASE_URL}/v2/analytics/timelines"
                 f"?blogId={blog_id}&userId={METRICOOL_USER_ID}&integrationSource=MCP"
-                f"&from={start}T00%3A00%3A00%2B01%3A00&to={end}T23%3A59%3A59%2B02%3A00"
+                f"&from={start_formatted}&to={end_formatted}"
                 f"&timezone={timezone}&metric={met}&subject={subj}&network={network}"
                 )
             try:
@@ -696,5 +701,29 @@ async def get_analytics(blog_id: int, start: str, end: str, timezone: str, netwo
             except Exception as e:
                 results[f"{subj}:{met}"] = f"Error: {str(e)}"
 
+            for key, value in results.items():
+                if isinstance(value, dict) and "data" in value:
+                    for item in value["data"]:
+                        if isinstance(item, dict) and "values" in item:
+                            for v in item["values"]:
+                                if "dateTime" in v:
+                                    v["dateTime"] = convert_datetime_to_timezone(v["dateTime"], unquote(timezone))
+
     return results if results else "No valid data."
+
+def format_datetime_with_timezone(date_str: str, hour: str, timezone_str: str) -> str:
+    tz_clean = unquote(timezone_str)
+    tz = timezone(tz_clean)
+    dt = datetime.strptime(f"{date_str}T{hour}", "%Y-%m-%dT%H:%M:%S")
+    final_dt = tz.localize(dt)
+    return quote(final_dt.isoformat())
+
+def convert_datetime_to_timezone(dt_str: str, target_tz_str: str) -> str:
+    try:
+        dt = datetime.strptime(dt_str, "%Y-%m-%dT%H:%M:%S%z")
+        target_tz = timezone(target_tz_str)
+        dt_converted = dt.astimezone(target_tz)
+        return dt_converted.isoformat()
+    except Exception as e:
+        return dt_str
 

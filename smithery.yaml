@@ -17,9 +17,7 @@ startCommand:
     |-
     (config) => ({
       "command": "uvx",
-      "args": [
-        "git+https://github.com/metricool/mcp-metricool"
-      ],
+      "args": ["mcp-metricool"],
       "env": {
         "METRICOOL_USER_TOKEN": config.METRICOOL_USER_TOKEN,
         "METRICOOL_USER_ID": config.METRICOOL_USER_ID
