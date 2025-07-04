@@ -7,5 +7,4 @@ def main() -> None:
     "Run the Metricool MCP server"
     mcp.run(
         transport="http",
-        port=int(os.environ.get("PORT", 8000)),
     )

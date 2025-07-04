@@ -2,6 +2,8 @@ import json
 from typing import Any
 
 from mcp.server.fastmcp import FastMCP
+from starlette.requests import Request
+from starlette.responses import PlainTextResponse
 
 from mcp_metricool.utils.utils import make_get_request
 from mcp_metricool.utils.utils import make_post_request
@@ -12,6 +14,10 @@ from ..config import METRICOOL_USER_ID
 
 # Initialize FastMCP server
 mcp = FastMCP("metricool")
+
+@mcp.custom_route("/health", methods=["GET"])
+async def health_check(request: Request) -> PlainTextResponse:
+    return PlainTextResponse("OK")
 
 @mcp.tool()
 async def get_brands(state: str) -> str | dict[str, Any]:

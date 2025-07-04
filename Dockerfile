@@ -37,5 +37,8 @@ COPY --from=uv --chown=app:app /app/.venv /app/.venv
 # Place executables in the environment at the front of the path
 ENV PATH="/app/.venv/bin:$PATH"
 
+# Expose the port the app runs on
+EXPOSE 8000
+
 # Run the MCP server
 ENTRYPOINT ["mcp-metricool"]
