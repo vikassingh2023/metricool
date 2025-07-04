@@ -398,7 +398,7 @@ async def get_network_competitors(network: str, init_date: str, end_date: str, b
     return response
 
 @mcp.tool()
-async def post_schedule_post(date:str, blog_id: int, info: json) -> str | dict[str, Any]:
+async def post_schedule_post(date:str, blog_id: int, info: dict) -> str | dict[str, Any]:
     """
     Schedule a post to Metricool at a specific date and time.
     To be able to schedule the post, you need to maintain the structure.
@@ -525,7 +525,7 @@ async def get_best_time_to_post(start: str, end: str, blog_id: int, provider: st
     return response
 
 @mcp.tool()
-async def update_schedule_post(id: str, date:str, blog_id: int, info: json) -> str | dict[str, Any]:
+async def update_schedule_post(id: str, date:str, blog_id: int, info: dict) -> str | dict[str, Any]:
     """
     Update a scheduled post in Metricool. You need the id of the post to update. Get it from the get_scheduled_posts tool previous on the conversation.
     Ask the user if they're sure they want to modify the post, including what will be changed, and require them to confirm.
@@ -600,7 +600,7 @@ async def get_metrics(network: str) -> str | dict[str, Any]:
 
 
 @mcp.tool()
-async def get_analytics(blog_id: int, start: str, end: str, timezone: str, network: str, metric: [str]) -> str | dict[str, Any]:
+async def get_analytics(blog_id: int, start: str, end: str, timezone: str, network: str, metric: list[str]) -> str | dict[str, Any]:
 
     """
     Retrieve analytics data for a specific Metricool brand. If the user does not specify any metric you can use the
