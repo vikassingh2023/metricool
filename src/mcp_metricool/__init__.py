@@ -6,5 +6,5 @@ from .tools import tools
 def main() -> None:
     "Run the Metricool MCP server"
     mcp.run(
-        transport="http",
+        transport="sse",
     )
