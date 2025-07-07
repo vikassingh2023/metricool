@@ -1,5 +1,5 @@
 import json
-from typing import Any
+from typing import Any, List, Dict
 
 from mcp.server.fastmcp import FastMCP
 
@@ -16,10 +16,36 @@ from pytz import timezone
 # Initialize FastMCP server
 mcp = FastMCP("metricool")
 
+
 @mcp.tool()
-async def get_brands() -> str | dict[str, Any]:
+async def get_brands() -> dict[str, Any]:
     """
     Get the list of brands from your Metricool account.
+    """
+
+    url = f"{METRICOOL_BASE_URL}/v2/settings/brands?userId={METRICOOL_USER_ID}&integrationSource=MCP"
+
+    response = await make_get_request(url)
+    if not response:
+        return ("Failed to get brands")
+    result = []
+    dicts = response["data"]
+    for item in dicts:
+        simplified = {
+            "label": item.get("label"),
+            "id": item.get("id"),
+            "userId": item.get("userId"),
+            "networks": item.get("networksData"),
+            "timezone": item.get("timezone")
+        }
+        result.append(simplified)
+    return result
+
+@mcp.tool()
+async def get_brands_complete() -> str | dict[str, Any]:
+    """
+    Get the list of brands from your Metricool account. Only use this tool if the user asks specifically for his brands, in every other case
+    use get_brands.
     Add to the result that the only networks with competitors are Instagram, Facebook, Twitch, YouTube, Twitter, and Bluesky.
     """
 
@@ -386,6 +412,7 @@ async def get_network_competitors(network: str, init_date: str, end_date: str, b
     Args:
      init date: Init date of the period to get the data. The format is YYYY-MM-DD
      end date: End date of the period to get the data. The format is YYYY-MM-DD
+     network: Network to retrieve the competitors. The format is "twitter", "facebook", "instagram", "youtube", "twitch" and "bluesky". Only these are accepted.
      blog id: Blog id of the Metricool brand account.
      limit: Limit of competitors. By default = 10
      timezone: Timezone of the post. The format is "Europe%2FMadrid".  Use the timezone of the user extracted from the get_brands tool.
@@ -394,6 +421,36 @@ async def get_network_competitors(network: str, init_date: str, end_date: str, b
     url = f"{METRICOOL_BASE_URL}/v2/analytics/competitors/{network}?from={init_date}T00%3A00%3A00&to={end_date}T23%3A59%3A59&blogId={blog_id}&userId={METRICOOL_USER_ID}&limit={limit}&timezone={timezone}&integrationSource=MCP"
 
     response = await make_get_request(url)
+
+    if not response:
+        return ("Failed to get competitors")
+
+    return response
+
+@mcp.tool()
+async def get_network_competitors_posts(network: str, init_date: str, end_date: str, blog_id: int, limit: int, timezone: str) -> str | dict[str, Any]:
+    """
+    Get the list of posts from your competitors from your Metricool brand account.
+    Add interesting conclusions for my brand about my competitors and analyze their posts.
+
+    Args:
+     init date: Init date of the period to get the data. The format is YYYY-MM-DD
+     end date: End date of the period to get the data. The format is YYYY-MM-DD
+     network: Network to retrieve the posts. The format is "twitter", "facebook", "instagram", "youtube", "twitch" and "bluesky". Only these are accepted.
+     blog id: Blog id of the Metricool brand account.
+     limit: Limit of posts of competitors. By default = 50
+     timezone: Timezone of the post. The format is "Europe%2FMadrid".  Use the timezone of the user extracted from the get_brands tool.
+    """
+    if(network=="instagram"):
+        url = f"{METRICOOL_BASE_URL}/v2/analytics/competitors/{network}/publications?from={init_date}T00%3A00%3A00&to={end_date}T23%3A59%3A59&blogId={blog_id}&userId={METRICOOL_USER_ID}&limit={limit}&timezone={timezone}&integrationSource=MCP"
+        response_pub = await make_get_request(url)
+        url = f"{METRICOOL_BASE_URL}/v2/analytics/competitors/{network}/publications?from={init_date}T00%3A00%3A00&to={end_date}T23%3A59%3A59&blogId={blog_id}&userId={METRICOOL_USER_ID}&limit={limit}&timezone={timezone}&integrationSource=MCP"
+        response_reels = await make_get_request(url)
+        response={"publications":response_pub, "reels":response_reels}
+    else:
+        url = f"{METRICOOL_BASE_URL}/v2/analytics/competitors/{network}/posts?from={init_date}T00%3A00%3A00&to={end_date}T23%3A59%3A59&blogId={blog_id}&userId={METRICOOL_USER_ID}&limit={limit}&timezone={timezone}&integrationSource=MCP"
+
+        response = await make_get_request(url)
 
     if not response:
         return ("Failed to get competitors")
@@ -441,7 +498,7 @@ async def post_schedule_post(date:str, blog_id: int, info: json) -> str | dict[s
                             "pinterestData": {"boardId":"", "pinTitle":"","pinLink":"", "pinNewFormat":True},
                             "youtubeData": {"title": "<string>", "type": "<string>", "privacy": "<string>", "tags": [ "<string>", "<string>" ], "category": "<string>", "madeForKids": "<boolean>"},
                             "twitchData": {"autoPublish":True, "tags":[]},
-                            "tiktokData": {"disableComment": "<boolean>", "disableDuet": "<boolean>", "disableStitch": "<boolean>", "privacyOption": "<string>", "commercialContentThirdParty": "<boolean>", "commercialContentOwnBrand": "<boolean>", "title": "<string>", "autoAddMusic": "<boolean>", "photoCoverIndex": "<integer>"},
+                            "tiktokData": {"disableComment": "<boolean>", "disableDuet": "<boolean>", "disableStitch": "<boolean>", "privacyOption": "<string>" default is "PUBLIC_TO_EVERYONE", "commercialContentThirdParty": "<boolean>", "commercialContentOwnBrand": "<boolean>", "title": "<string>", "autoAddMusic": "<boolean>", "photoCoverIndex": "<integer>"},
                             "blueskyData": {"postLanguages":["",""]},
                             "threadsData":{"allowedCountryCodes:["",""]}
         The other fields are optional, but you need to add the ones you have. If you don't have more information, you can ask the user about it and wait until you have the information.
