@@ -18,7 +18,7 @@ mcp = FastMCP("metricool")
 
 
 @mcp.tool()
-async def get_brands() -> dict[str, Any]:
+async def get_brands() -> list[dict[str, Any]]:
     """
     Get the list of brands from your Metricool account.
     """

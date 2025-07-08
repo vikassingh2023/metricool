@@ -29,6 +29,7 @@ Paste this template in the file and replace <METRICOOL_USER_TOKEN> and <METRICOO
         "mcp-metricool": {
             "command": "uvx",
             "args": [
+                "--upgrade",
                 "mcp-metricool"
             ],
             "env": {
