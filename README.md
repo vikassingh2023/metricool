@@ -124,3 +124,6 @@ The server implements several tools to interact with the Metricool API:
 
 27. `get_analytics`
     - Get the analytics from a specific social network of your Metricool brand account.
+
+28. `get_pinterest_boards`
+    - Get Pinterest Boards from a specific Metricool brand account.
