@@ -516,6 +516,7 @@ async def post_schedule_post(date:str, blog_id: int, info: json) -> str | dict[s
                                 Facebook boost, boostPayer, and boostBeneficiary are only included if they are promoted posts.
                             "instagramData": {"type": "<string>" (default = POST), "collaborators":[{username: "string", deleted: false}]], "showReelOnFeed": "<boolean>" (default = true), "boost":<double>, "boostPayer":"<string>", "boostBeneficiary":"<string>"},
                                 Instagram type can be "POST", "REEL" or "STORY".
+                                There could be more than one collaborator, following the same structure.
                             "linkedinData": {"documentTitle": "<string>", "publishImagesAsPDF": "<boolean>" (default = false), "previewIncluded": "<boolean>" (default = true), "type": "<string>" (default = post), "poll": {"question": "<string>", "options": [{"text": "<string>"}, {"text": "<string>"}], "settings": {"duration": "<string>"}}},
                                 Linkedin type can be "post" or "poll".
                                 If there is a documentTitle in Linkedin, publishImagesAsPDF must be true.
