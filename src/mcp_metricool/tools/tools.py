@@ -344,7 +344,7 @@ async def get_twitch_videos(init_date: str, end_date: str, blog_id: int) -> str 
     return response
 
 @mcp.tool()
-async def get_facebookads_campaigns(init_date: str, end_date: str, blog_id: int) -> str | dict[str, Any]:
+async def get_facebookads_campaigns(init_date: str, end_date: str, blog_id: int) -> str | list[dict[str, Any]]:
     """
     Get the list of Facebook Ads Campaigns from your Metricool account.
 
@@ -364,7 +364,7 @@ async def get_facebookads_campaigns(init_date: str, end_date: str, blog_id: int)
     return response
 
 @mcp.tool()
-async def get_googleads_campaigns(init_date: str, end_date: str, blog_id: int) -> str | dict[str, Any]:
+async def get_googleads_campaigns(init_date: str, end_date: str, blog_id: int) -> str | list[dict[str, Any]]:
     """
     Get the list of Google Ads Campaigns from your Metricool account.
 
@@ -514,9 +514,10 @@ async def post_schedule_post(date:str, blog_id: int, info: json) -> str | dict[s
                                 Facebook type can be "POST", "REEL" or "STORY"
                                 Facebook title is only available for Facebook videos (This is separate from the main text of the post).
                                 Facebook boost, boostPayer, and boostBeneficiary are only included if they are promoted posts.
-                            "instagramData": {"type": "<string>" (default = POST), "collaborators":[{username: "string", deleted: false}]], "showReelOnFeed": "<boolean>" (default = true), "boost":<double>, "boostPayer":"<string>", "boostBeneficiary":"<string>"},
+                            "instagramData": {"type": "<string>" (default = POST), "collaborators":[{username: "string", deleted: false}]], "carouselTags":{"<number>":[{"username":"<string>","x":<double>,"y":<double>}]} (number is the index of the image within the carousel), "showReelOnFeed": "<boolean>" (default = true), "boost":<double>, "boostPayer":"<string>", "boostBeneficiary":"<string>"},
                                 Instagram type can be "POST", "REEL" or "STORY".
                                 There could be more than one collaborator, following the same structure.
+                                The carouselTags is a dictionary with the number of the image in the carousel as key and a list of tags for that image.
                             "linkedinData": {"documentTitle": "<string>", "publishImagesAsPDF": "<boolean>" (default = false), "previewIncluded": "<boolean>" (default = true), "type": "<string>" (default = post), "poll": {"question": "<string>", "options": [{"text": "<string>"}, {"text": "<string>"}], "settings": {"duration": "<string>"}}},
                                 Linkedin type can be "post" or "poll".
                                 If there is a documentTitle in Linkedin, publishImagesAsPDF must be true.
