@@ -1,31 +1,59 @@
 import os
-from fastapi import FastAPI
+import json
+import subprocess
+from fastapi import FastAPI, Request, Header, HTTPException
 from fastapi.responses import JSONResponse
 import uvicorn
-import subprocess
 
 app = FastAPI()
 
+# Environment variables from Railway
+API_KEY = os.environ.get("MCP_API_KEY", "dev-secret")
+METRICOOL_USER_TOKEN = os.environ.get("METRICOOL_USER_TOKEN")
+METRICOOL_USER_ID = os.environ.get("METRICOOL_USER_ID")
+
 @app.get("/")
-def root():
+def health():
     return {"status": "ok", "message": "Metricool MCP Server running"}
 
 @app.post("/run")
-def run_metricool():
-    """Run MCP Metricool CLI and return output"""
+async def run_metricool(request: Request, authorization: str = Header(None)):
+    # Require API key for security
+    if authorization != f"Bearer {API_KEY}":
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    data = await request.json()
+    cmd = data.get("command", "get_brands")
+    args = data.get("args", [])
+
+    # Add Metricool environment variables for the subprocess
+    env = os.environ.copy()
+    env["METRICOOL_USER_TOKEN"] = METRICOOL_USER_TOKEN or ""
+    env["METRICOOL_USER_ID"] = METRICOOL_USER_ID or ""
+
     try:
-        result = subprocess.run(
-            ["mcp-metricool"],
+        process = subprocess.run(
+            ["mcp-metricool", cmd, *args],
             capture_output=True,
             text=True,
+            env=env,
             check=True
         )
-        return JSONResponse({"output": result.stdout})
+
+        # Parse the CLI output
+        try:
+            output = json.loads(process.stdout)
+        except json.JSONDecodeError:
+            output = {"raw_output": process.stdout.strip()}
+
+        return JSONResponse({"status": "success", "data": output})
+
     except subprocess.CalledProcessError as e:
         return JSONResponse(
-            {"error": e.stderr or "Command failed"},
+            {"status": "error", "stderr": e.stderr or str(e)},
             status_code=500
         )
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
