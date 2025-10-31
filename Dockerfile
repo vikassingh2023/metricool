@@ -40,4 +40,4 @@ ENV METRICOOL_USER_TOKEN=""
 ENV METRICOOL_USER_ID=""
 
 # Start the MCP server
-CMD ["mcp-metricool"]
+CMD ["mcp-metricool", "--host", "0.0.0.0", "--port", "8080"]
