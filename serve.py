@@ -5,7 +5,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 # -------------------------------
-# DNS fallback for Railway
+# DNS fallback (for Railway)
 # -------------------------------
 dns_servers = ["1.1.1.1", "8.8.8.8"]
 
@@ -29,11 +29,57 @@ socket.getaddrinfo = custom_getaddrinfo
 app = FastAPI(title="Metricool MCP Server")
 
 METRICOOL_USER_ID = os.getenv("METRICOOL_USER_ID")
-METRICOOL_USER_TOKEN = os.getenv("METRICOOL_USER_TOKEN")  # This is the X-Mc-Auth key
+METRICOOL_USER_TOKEN = os.getenv("METRICOOL_USER_TOKEN")  # X-Mc-Auth key
 BASE_URL = "https://app.metricool.com/api"
 
 
 @app.get("/")
 async def root():
-    """Health check"""
-    return {"status": "ok", "message": "Metricool MCP
+    """Health check endpoint"""
+    return {"status": "ok", "message": "Metricool MCP Server running"}
+
+
+@app.get("/brands")
+async def get_brands():
+    """Fetch brands using Metricool X-Mc-Auth header"""
+    try:
+        url = f"{BASE_URL}/brands?user_id={METRICOOL_USER_ID}"
+        headers = {"X-Mc-Auth": METRICOOL_USER_TOKEN}
+        response = requests.get(url, headers=headers, timeout=20)
+        response.raise_for_status()
+        return {"status": "success", "data": response.json()}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@app.post("/run")
+async def run_tool(request: Request):
+    """Run Metricool actions"""
+    try:
+        body = await request.json()
+        action = body.get("action")
+
+        headers = {"X-Mc-Auth": METRICOOL_USER_TOKEN}
+
+        if action == "brands":
+            url = f"{BASE_URL}/brands?user_id={METRICOOL_USER_ID}"
+            response = requests.get(url, headers=headers, timeout=20)
+            response.raise_for_status()
+            return {"status": "success", "data": response.json()}
+
+        elif action == "max_profiles":
+            url = f"{BASE_URL}/admin/max-profiles"
+            response = requests.get(url, headers=headers, timeout=20)
+            response.raise_for_status()
+            return {"status": "success", "data": response.json()}
+
+        else:
+            return {"status": "error", "message": f"Unknown action '{action}'"}
+
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    return JSONResponse(status_code=500, content={"status": "error", "detail": str(exc)})
