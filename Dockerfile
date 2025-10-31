@@ -40,4 +40,4 @@ ENV METRICOOL_USER_TOKEN=""
 ENV METRICOOL_USER_ID=""
 
 # Start the MCP server
-CMD ["python", "-m", "mcp_metricool"]
+CMD ["python", "serve.py"]
