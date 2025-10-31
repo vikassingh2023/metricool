@@ -1,43 +1,18 @@
-# ---- Stage 1: Build dependencies using uv ----
-FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS uv
-
-WORKDIR /app
-
-# Enable bytecode compilation and copy mode
-ENV UV_COMPILE_BYTECODE=1
-ENV UV_LINK_MODE=copy
-
-# Copy project files needed for dependency installation
-COPY pyproject.toml uv.lock README.md ./
-
-# Install dependencies (no cache mounts)
-RUN uv sync --frozen --no-install-project --no-dev --no-editable
-
-# Copy all source code
-COPY . .
-
-# Install the project into its venv
-RUN uv sync --frozen --no-dev --no-editable
-
-
-# ---- Stage 2: Runtime ----
 FROM python:3.12-slim-bookworm
 
 WORKDIR /app
 
-# Copy from the build stage
-COPY --from=uv /app/.venv /app/.venv
-COPY --from=uv /app /app
+# Install dependencies
+COPY pyproject.toml uv.lock README.md ./
+RUN pip install --upgrade pip setuptools wheel fastapi uvicorn mcp-metricool
 
-# Add venv binaries to PATH
-ENV PATH="/app/.venv/bin:$PATH"
+# Copy app code
+COPY . .
 
-# Expose Railway default port
+# Railway will set PORT automatically
+ENV PORT=8080
+
 EXPOSE 8080
 
-# Environment variables (you’ll set actual secrets in Railway)
-ENV METRICOOL_USER_TOKEN=""
-ENV METRICOOL_USER_ID=""
-
-# Start the MCP server
+# Start the HTTP wrapper
 CMD ["python", "serve.py"]
