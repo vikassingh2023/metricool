@@ -1,44 +1,47 @@
+# ---- Stage 1: Build dependencies using uv ----
 FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS uv
 
-# Install the project into /app
 WORKDIR /app
 
-# Enable bytecode compilation
+# Enable bytecode compilation and copy mode
 ENV UV_COMPILE_BYTECODE=1
-
-# Copy from the cache instead of linking since it's a mounted volume
 ENV UV_LINK_MODE=copy
 
-# Copy the required files for building the environment
-COPY pyproject.toml /app
-COPY uv.lock /app
-COPY README.md /app
+# Copy required files
+COPY pyproject.toml uv.lock README.md ./
 
 # Sync dependencies and update the lockfile
 RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,source=uv.lock,target=uv.lock \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     uv sync --frozen --no-install-project --no-dev --no-editable
 
-# Then, add the rest of the project source code and install it
-# Installing separately from its dependencies allows optimal layer caching
-ADD . /app
+# Add the rest of the source code and install the project
+COPY . .
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev --no-editable
 
+# Explicitly install dependencies into /root/.local to make sure the folder exists
+RUN mkdir -p /root/.local && \
+    uv pip install --target /root/.local -r <(uv export requirements) || true
+
+
+# ---- Stage 2: Runtime image ----
 FROM python:3.12-slim-bookworm
 
 WORKDIR /app
- 
-# Install dependencies normally instead of copying from uv stage
-RUN pip install --no-cache-dir -r requirements.txt
 
-# Place executables in the environment at the front of the path
+# Copy only what’s needed from the build stage
+COPY --from=uv /app/.venv /app/.venv
+# Remove the problematic COPY of /root/.local — not needed for runtime
+
+# Add venv binaries to PATH
 ENV PATH="/app/.venv/bin:$PATH"
 
-# Define environment variables
-ENV METRICOOL_USER_TOKEN=<METRICOOL_USER_TOKEN>
-ENV METRICOOL_USER_ID=<METRICOOL_USER_ID>
+# Render expects the app to listen on port 8080
+EXPOSE 8080
 
-# Run the MCP server
-ENTRYPOINT ["mcp-metricool"]
+# Define environment variables (use Render’s dashboard to set actual secrets)
+ENV METRICOOL_USER_TOKEN=""
+ENV METRICOOL_USER_ID=""
+
+# Start your MCP server
+CMD ["mcp-metricool"]
