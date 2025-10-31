@@ -13,6 +13,4 @@ COPY . .
 ENV PORT=8080
 
 EXPOSE 8080
-
-# Start the HTTP wrapper
-CMD ["python", "serve.py"]
+CMD ["uvicorn", "serve:app", "--host", "0.0.0.0", "--port", "8080"]
