@@ -25,39 +25,35 @@ async def run_metricool(request: Request, authorization: str = Header(None)):
     cmd = data.get("command", "get_brands")
     args = data.get("args", [])
 
-    # Debug log
-    print(f"Running mcp-metricool {cmd} {args}")
-    print(f"METRICOOL_USER_ID={METRICOOL_USER_ID}")
-    print(f"METRICOOL_USER_TOKEN={METRICOOL_USER_TOKEN[:5]}***")  # hide sensitive parts
-
-
-    # Add Metricool environment variables for the subprocess
+    # Add Metricool credentials to the subprocess environment
     env = os.environ.copy()
     env["METRICOOL_USER_TOKEN"] = METRICOOL_USER_TOKEN or ""
     env["METRICOOL_USER_ID"] = METRICOOL_USER_ID or ""
 
-    try:
-        process = subprocess.run(
-            ["mcp-metricool", cmd, *args],
-            capture_output=True,
-            text=True,
-            env=env,
-            check=True
-        )
+    # --- Debug logging ---
+    print(f"[DEBUG] Running command: mcp-metricool {cmd} {args}")
+    print(f"[DEBUG] METRICOOL_USER_ID: {METRICOOL_USER_ID}")
+    print(f"[DEBUG] METRICOOL_USER_TOKEN (first 8 chars): {METRICOOL_USER_TOKEN[:8]}...")
 
-        # Parse the CLI output
-        try:
-            output = json.loads(process.stdout)
-        except json.JSONDecodeError:
-            output = {"raw_output": process.stdout.strip()}
+    process = subprocess.run(
+        ["mcp-metricool", cmd, *args],
+        capture_output=True,
+        text=True,
+        env=env
+    )
 
-        return JSONResponse({"status": "success", "data": output})
+    print(f"[DEBUG] Exit code: {process.returncode}")
+    print(f"[DEBUG] Stdout: {process.stdout.strip()}")
+    print(f"[DEBUG] Stderr: {process.stderr.strip()}")
 
-    except subprocess.CalledProcessError as e:
-        return JSONResponse(
-            {"status": "error", "stderr": e.stderr or str(e)},
-            status_code=500
-        )
+    # Return both stdout/stderr to API for clarity
+    return JSONResponse({
+        "status": "success" if process.returncode == 0 else "error",
+        "stdout": process.stdout.strip(),
+        "stderr": process.stderr.strip(),
+        "exit_code": process.returncode
+    })
+
 
 
 if __name__ == "__main__":
