@@ -7,37 +7,35 @@ WORKDIR /app
 ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
 
-# Copy required files
+# Copy project files needed for dependency installation
 COPY pyproject.toml uv.lock README.md ./
 
-# Sync dependencies
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-install-project --no-dev --no-editable
+# Install dependencies (no cache mounts)
+RUN uv sync --frozen --no-install-project --no-dev --no-editable
 
-# Add the rest of the source code
+# Copy all source code
 COPY . .
 
-# Final sync to install the project into its venv
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-dev --no-editable
+# Install the project into its venv
+RUN uv sync --frozen --no-dev --no-editable
 
 
-# ---- Stage 2: Runtime image ----
+# ---- Stage 2: Runtime ----
 FROM python:3.12-slim-bookworm
 
 WORKDIR /app
 
-# Copy built virtual environment from build stage
+# Copy from the build stage
 COPY --from=uv /app/.venv /app/.venv
 COPY --from=uv /app /app
 
 # Add venv binaries to PATH
 ENV PATH="/app/.venv/bin:$PATH"
 
-# Render expects the app to listen on port 8080
+# Expose Railway default port
 EXPOSE 8080
 
-# Environment variables (set real ones in Render dashboard)
+# Environment variables (you’ll set actual secrets in Railway)
 ENV METRICOOL_USER_TOKEN=""
 ENV METRICOOL_USER_ID=""
 
