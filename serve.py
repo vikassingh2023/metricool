@@ -5,7 +5,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 # -------------------------------
-# DNS fallback (for Railway)
+# DNS fallback (Railway safe)
 # -------------------------------
 dns_servers = ["1.1.1.1", "8.8.8.8"]
 
@@ -33,9 +33,16 @@ METRICOOL_USER_TOKEN = os.getenv("METRICOOL_USER_TOKEN")  # X-Mc-Auth key
 BASE_URL = "https://app.metricool.com/api"
 
 
+def safe_json(response):
+    """Return JSON if possible, else text"""
+    try:
+        return response.json()
+    except Exception:
+        return {"non_json_response": response.text[:500]}  # capture first 500 chars
+
+
 @app.get("/")
 async def root():
-    """Health check endpoint"""
     return {"status": "ok", "message": "Metricool MCP Server running"}
 
 
@@ -46,8 +53,14 @@ async def get_brands():
         url = f"{BASE_URL}/brands?user_id={METRICOOL_USER_ID}"
         headers = {"X-Mc-Auth": METRICOOL_USER_TOKEN}
         response = requests.get(url, headers=headers, timeout=20)
-        response.raise_for_status()
-        return {"status": "success", "data": response.json()}
+
+        data = safe_json(response)
+        return {
+            "status": "success" if response.ok else "error",
+            "http_status": response.status_code,
+            "data": data,
+        }
+
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
@@ -58,23 +71,22 @@ async def run_tool(request: Request):
     try:
         body = await request.json()
         action = body.get("action")
-
         headers = {"X-Mc-Auth": METRICOOL_USER_TOKEN}
 
         if action == "brands":
             url = f"{BASE_URL}/brands?user_id={METRICOOL_USER_ID}"
-            response = requests.get(url, headers=headers, timeout=20)
-            response.raise_for_status()
-            return {"status": "success", "data": response.json()}
-
         elif action == "max_profiles":
             url = f"{BASE_URL}/admin/max-profiles"
-            response = requests.get(url, headers=headers, timeout=20)
-            response.raise_for_status()
-            return {"status": "success", "data": response.json()}
-
         else:
             return {"status": "error", "message": f"Unknown action '{action}'"}
+
+        response = requests.get(url, headers=headers, timeout=20)
+        data = safe_json(response)
+        return {
+            "status": "success" if response.ok else "error",
+            "http_status": response.status_code,
+            "data": data,
+        }
 
     except Exception as e:
         return {"status": "error", "message": str(e)}
