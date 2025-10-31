@@ -18,13 +18,18 @@ def health():
 
 @app.post("/run")
 async def run_metricool(request: Request, authorization: str = Header(None)):
-    # Require API key for security
     if authorization != f"Bearer {API_KEY}":
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     data = await request.json()
     cmd = data.get("command", "get_brands")
     args = data.get("args", [])
+
+    # Debug log
+    print(f"Running mcp-metricool {cmd} {args}")
+    print(f"METRICOOL_USER_ID={METRICOOL_USER_ID}")
+    print(f"METRICOOL_USER_TOKEN={METRICOOL_USER_TOKEN[:5]}***")  # hide sensitive parts
+
 
     # Add Metricool environment variables for the subprocess
     env = os.environ.copy()
