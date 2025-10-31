@@ -1,61 +1,64 @@
 import os
-import json
-import subprocess
-from fastapi import FastAPI, Request, Header, HTTPException
+import requests
+from fastapi import FastAPI
 from fastapi.responses import JSONResponse
-import uvicorn
 
-app = FastAPI()
+app = FastAPI(title="Metricool MCP API")
 
-# Environment variables from Railway
-API_KEY = os.environ.get("MCP_API_KEY", "dev-secret")
-METRICOOL_USER_TOKEN = os.environ.get("METRICOOL_USER_TOKEN")
-METRICOOL_USER_ID = os.environ.get("METRICOOL_USER_ID")
+METRICOOL_USER_TOKEN = os.getenv("METRICOOL_USER_TOKEN")
+METRICOOL_USER_ID = os.getenv("METRICOOL_USER_ID")
+
+BASE_URL = "https://api.metricool.com/v2"  # current Metricool REST endpoint
+
 
 @app.get("/")
-def health():
+async def root():
     return {"status": "ok", "message": "Metricool MCP Server running"}
 
+
+def call_metricool(endpoint: str, params: dict = None):
+    """Helper to call Metricool API with auth."""
+    headers = {"Authorization": f"Bearer {METRICOOL_USER_TOKEN}"}
+    params = params or {}
+    params["user_id"] = METRICOOL_USER_ID
+
+    try:
+        r = requests.get(f"{BASE_URL}/{endpoint}", headers=headers, params=params, timeout=15)
+        r.raise_for_status()
+        return r.json()
+    except requests.exceptions.RequestException as e:
+        return {"error": str(e)}
+
+
+@app.get("/brands")
+async def get_brands():
+    """List all brands (accounts) in Metricool."""
+    data = call_metricool("brands")
+    return JSONResponse({"status": "success", "data": data})
+
+
+@app.get("/posts")
+async def get_posts(brand_id: str):
+    """Fetch posts for a given brand."""
+    data = call_metricool(f"brands/{brand_id}/posts")
+    return JSONResponse({"status": "success", "data": data})
+
+
+@app.get("/analytics")
+async def get_analytics(brand_id: str):
+    """Fetch analytics for a brand."""
+    data = call_metricool(f"brands/{brand_id}/analytics")
+    return JSONResponse({"status": "success", "data": data})
+
+
 @app.post("/run")
-async def run_metricool(request: Request, authorization: str = Header(None)):
-    if authorization != f"Bearer {API_KEY}":
-        raise HTTPException(status_code=401, detail="Unauthorized")
-
-    data = await request.json()
-    cmd = data.get("command", "get_brands")
-    args = data.get("args", [])
-
-    # Add Metricool credentials to the subprocess environment
-    env = os.environ.copy()
-    env["METRICOOL_USER_TOKEN"] = METRICOOL_USER_TOKEN or ""
-    env["METRICOOL_USER_ID"] = METRICOOL_USER_ID or ""
-
-    # --- Debug logging ---
-    print(f"[DEBUG] Running command: mcp-metricool {cmd} {args}")
-    print(f"[DEBUG] METRICOOL_USER_ID: {METRICOOL_USER_ID}")
-    print(f"[DEBUG] METRICOOL_USER_TOKEN (first 8 chars): {METRICOOL_USER_TOKEN[:8]}...")
-
-    process = subprocess.run(
-        ["mcp-metricool", cmd, *args],
-        capture_output=True,
-        text=True,
-        env=env
-    )
-
-    print(f"[DEBUG] Exit code: {process.returncode}")
-    print(f"[DEBUG] Stdout: {process.stdout.strip()}")
-    print(f"[DEBUG] Stderr: {process.stderr.strip()}")
-
-    # Return both stdout/stderr to API for clarity
-    return JSONResponse({
-        "status": "success" if process.returncode == 0 else "error",
-        "stdout": process.stdout.strip(),
-        "stderr": process.stderr.strip(),
-        "exit_code": process.returncode
-    })
-
-
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+async def run_generic(request: dict):
+    """
+    Generic endpoint to run custom Metricool API calls.
+    Example JSON body:
+      {"endpoint": "brands/123/posts", "params": {"limit": 5}}
+    """
+    endpoint = request.get("endpoint")
+    params = request.get("params", {})
+    data = call_metricool(endpoint, params)
+    return JSONResponse({"status": "success", "data": data})
