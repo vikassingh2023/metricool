@@ -10,18 +10,16 @@ ENV UV_LINK_MODE=copy
 # Copy required files
 COPY pyproject.toml uv.lock README.md ./
 
-# Sync dependencies and update the lockfile
+# Sync dependencies
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-install-project --no-dev --no-editable
 
-# Add the rest of the source code and install the project
+# Add the rest of the source code
 COPY . .
+
+# Final sync to install the project into its venv
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev --no-editable
-
-# Explicitly install dependencies into /root/.local to make sure the folder exists
-RUN mkdir -p /root/.local && \
-    uv pip install --target /root/.local -r <(uv export requirements) || true
 
 
 # ---- Stage 2: Runtime image ----
@@ -29,9 +27,9 @@ FROM python:3.12-slim-bookworm
 
 WORKDIR /app
 
-# Copy only what’s needed from the build stage
+# Copy built virtual environment from build stage
 COPY --from=uv /app/.venv /app/.venv
-# Remove the problematic COPY of /root/.local — not needed for runtime
+COPY --from=uv /app /app
 
 # Add venv binaries to PATH
 ENV PATH="/app/.venv/bin:$PATH"
@@ -39,9 +37,9 @@ ENV PATH="/app/.venv/bin:$PATH"
 # Render expects the app to listen on port 8080
 EXPOSE 8080
 
-# Define environment variables (use Render’s dashboard to set actual secrets)
+# Environment variables (set real ones in Render dashboard)
 ENV METRICOOL_USER_TOKEN=""
 ENV METRICOOL_USER_ID=""
 
-# Start your MCP server
+# Start the MCP server
 CMD ["mcp-metricool"]
